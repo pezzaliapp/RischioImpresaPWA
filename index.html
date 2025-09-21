@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b5fff"/>
+  <title>📈 Rischio d’Impresa — PWA</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <meta name="description" content="Calcola il rischio della tua impresa: break-even, margine di sicurezza, leva operativa e copertura oneri. PWA offline-ready.">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">📈 Rischio d’Impresa</div>
+  <nav>
+    <button id="helpBtn" class="ghost">Guida</button>
+    <button id="planBtn" class="primary">Suggerimento</button>
+    <button id="installBtn" class="ghost">Installa</button>
+  </nav>
+</header>
+
+<main>
+<section class="intro">
+  <h1>Mettiti alla prova — Scopri il commerciale & l’imprenditore che c’è in te</h1>
+  <p>
+    Inserisci pochi dati della tua simulazione e ottieni subito <strong>Break-even</strong>, 
+    <strong>Margine di Sicurezza</strong>, <strong>Leva Operativa</strong>, 
+    <strong>Copertura Oneri</strong> e uno <strong>Score di Rischio</strong> (0–100).
+  </p>
+</section>
+
+<section class="grid">
+  <div class="card">
+    <h2>Input</h2>
+    <div class="form">
+      <label>Prezzo medio per unità (€)
+        <input id="p" type="number" min="0" step="0.01" value="100">
+      </label>
+      <label>Costo variabile unitario (€)
+        <input id="cv" type="number" min="0" step="0.01" value="60">
+      </label>
+      <label>Costi fissi annui (€)
+        <input id="cf" type="number" min="0" step="1" value="20000">
+      </label>
+      <label>Quantità prevista (unità/anno)
+        <input id="q" type="number" min="0" step="1" value="800">
+      </label>
+      <label>Debito medio (€/anno)*
+        <input id="debt" type="number" min="0" step="1" value="10000">
+      </label>
+      <label>Tasso interesse medio annuo (%)
+        <input id="rate" type="number" min="0" step="0.1" value="6">
+      </label>
+      <label>Capitale proprio (€)
+        <input id="equity" type="number" min="0" step="1" value="15000">
+      </label>
+      <small class="muted">* Debito su cui calcoli gli interessi (semplificazione).</small>
+      <div class="actions">
+        <button id="calcBtn" class="primary">Calcola</button>
+        <button id="resetBtn" class="ghost">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Risultati</h2>
+    <div class="results">
+      <div class="kpi"><span>Margine contrib. unitario</span><strong id="mc_u">—</strong></div>
+      <div class="kpi"><span>Margine contrib. %</span><strong id="mc_pct">—</strong></div>
+      <div class="kpi"><span>Break-even (unità)</span><strong id="bep_u">—</strong></div>
+      <div class="kpi"><span>Break-even (€)</span><strong id="bep_rev">—</strong></div>
+      <div class="kpi"><span>Fatturato previsto</span><strong id="rev">—</strong></div>
+      <div class="kpi"><span>EBIT (utile operativo)</span><strong id="ebit">—</strong></div>
+      <div class="kpi"><span>Oneri finanziari stimati</span><strong id="int">—</strong></div>
+      <div class="kpi"><span>Copertura oneri (ICR)</span><strong id="icr">—</strong></div>
+      <div class="kpi"><span>Leva operativa (DOL)</span><strong id="dol">—</strong></div>
+      <div class="score">
+        <div id="scoreBadge" class="badge">Score: —</div>
+        <div id="scoreBar" class="bar"><span style="width:0%"></span></div>
+        <p id="scoreNote" class="muted">Premi “Calcola”.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Legenda</h2>
+  <ul class="legend">
+    <li><strong>Margine di contribuzione</strong>: P − CVu. Parte di ricavo che copre i costi fissi.</li>
+    <li><strong>Break-even</strong>: volume al quale l’EBIT è zero.</li>
+    <li><strong>ICR</strong>: EBIT / Oneri finanziari (≥ 2 è sano; &lt; 1 è critico).</li>
+    <li><strong>DOL</strong>: sensibilità dell’EBIT a variazioni del volume (più alto = più rischioso).</li>
+  </ul>
+</section>
+
+<section class="footer">
+  <p>© 2025 pezzaliAPP — PWA Offline • Open Source (MIT)</p>
+</section>
+</main>
+
+<!-- Dialog Guida -->
+<dialog id="helpDialog">
+  <h3>Come funziona</h3>
+  <p>
+    Completa gli input e tocca <em>Calcola</em>. Lo <strong>Score di Rischio</strong> sintetizza più indicatori
+    in una scala 0–100: <span class="chip red">0–39 Alto</span>, <span class="chip amber">40–69 Medio</span>, <span class="chip green">70–100 Basso</span>.
+  </p>
+  <p>
+    Usa <em>Suggerimento</em> per un piano d’azione su misura affinché lo score salga almeno a <strong>70</strong>.
+  </p>
+  <form method="dialog">
+    <button class="primary">Ok</button>
+  </form>
+</dialog>
+
+<!-- Dialog Piano d'Azione -->
+<dialog id="planDialog">
+  <h3>Suggerimento — Piano d’Azione</h3>
+  <div id="planContent">
+    <p class="muted">Calcola prima i risultati.</p>
+  </div>
+  <form method="dialog">
+    <button class="primary">Chiudi</button>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js');
+  });
+}
+</script>
+</body>
+</html>
