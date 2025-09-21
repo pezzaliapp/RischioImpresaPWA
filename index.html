@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
   <meta name="description" content="Calcola il rischio della tua impresa: break-even, margine di sicurezza, leva operativa e copertura oneri. PWA offline-ready.">
 </head>
 <body>
@@ -27,9 +27,7 @@
 <section class="intro">
   <h1>Mettiti alla prova — Scopri il commerciale & l’imprenditore che c’è in te</h1>
   <p>
-    Inserisci pochi dati e ottieni subito <strong>Break-even</strong>, 
-    <strong>Margine di Sicurezza</strong>, <strong>Leva Operativa</strong>, 
-    <strong>Copertura Oneri</strong> e uno <strong>Score di Rischio</strong> (0–100).
+    Inserisci i dati: i risultati si aggiornano <strong>in tempo reale</strong>.
   </p>
 </section>
 
@@ -62,7 +60,6 @@
       </label>
       <small class="muted">* Debito su cui calcoli gli interessi (semplificazione).</small>
       <div class="actions">
-        <button id="calcBtn" class="primary large">Calcola</button>
         <button id="resetBtn" class="ghost">Reset</button>
       </div>
     </div>
@@ -83,7 +80,7 @@
       <div class="score">
         <div id="scoreBadge" class="badge">Score: —</div>
         <div id="scoreBar" class="bar"><span style="width:0%"></span></div>
-        <p id="scoreNote" class="muted">Modifica un dato o premi “Calcola”.</p>
+        <p id="scoreNote" class="muted">Modifica un dato per aggiornare i risultati.</p>
       </div>
     </div>
   </div>
@@ -108,11 +105,7 @@
 <dialog id="helpDialog">
   <h3>Come funziona</h3>
   <p>
-    Compila gli input: la PWA ricalcola in tempo reale. Lo <strong>Score di Rischio</strong> sintetizza più indicatori
-    in una scala 0–100: <span class="chip red">0–39 Alto</span>, <span class="chip amber">40–69 Medio</span>, <span class="chip green">70–100 Basso</span>.
-  </p>
-  <p>
-    Tocca <em>Suggerimento</em> per un piano d’azione che punti a uno score ≥ <strong>70</strong>.
+    Inserisci i dati: la PWA ricalcola in tempo reale. Tocca <em>Suggerimento</em> per il piano d’azione.
   </p>
   <form method="dialog">
     <button class="primary">Ok</button>
@@ -123,21 +116,20 @@
 <dialog id="planDialog">
   <h3>Suggerimento — Piano d’Azione</h3>
   <div id="planContent">
-    <p class="muted">Calcola prima i risultati.</p>
+    <p class="muted">Inserisci o modifica i dati per generare il piano.</p>
   </div>
   <form method="dialog">
     <button class="primary">Chiudi</button>
   </form>
 </dialog>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 <script>
-// Bypass SW if ?nosw=1
 const params = new URLSearchParams(location.search);
 const noSW = params.get('nosw') === '1';
 if ('serviceWorker' in navigator && !noSW) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js?v=4', {scope: './'});
+    navigator.serviceWorker.register('service-worker.js?v=5', {scope: './'});
   });
 }
 </script>

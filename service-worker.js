@@ -1,10 +1,10 @@
-// Service Worker v4 SAFE
-const CACHE = 'ri-cache-v4-safe';
+// Service Worker v5 live-only
+const CACHE = 'ri-cache-v5-live';
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=4',
-  './app.js?v=4',
+  './style.css?v=5',
+  './app.js?v=5',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png'
@@ -19,7 +19,6 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Network-first for navigations (HTML pages)
   if (e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request).then(resp => {
@@ -30,7 +29,6 @@ self.addEventListener('fetch', (e) => {
     );
     return;
   }
-  // Cache-first for static assets (respect query strings)
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
       const copy = resp.clone();

@@ -1,7 +1,6 @@
-// v4 SAFE
-console.info('RischioImpresa v4 SAFE loaded');
+// v5 live-only (no Calcola)
+console.info('RischioImpresa v5 loaded');
 
-// Helpers (ASCII-only)
 function fmtEUR0(n){ return isFinite(n) ? n.toLocaleString('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}) : '—'; }
 function fmtEUR(n){ return isFinite(n) ? n.toLocaleString('it-IT',{style:'currency',currency:'EUR'}) : '—'; }
 function fmtPCT(n){ return isFinite(n) ? (n*100).toFixed(1)+'%' : '—'; }
@@ -13,7 +12,7 @@ function vals(){ var o={}; ids.forEach(function(k){ o[k]= Number(el(k).value)||0
 // Theme toggle
 (function initTheme(){
   var root=document.documentElement;
-  var saved=localStorage.getItem('ri.theme'); // 'light'|'dark'|'auto'
+  var saved=localStorage.getItem('ri.theme');
   root.setAttribute('data-theme', saved || 'auto');
   function label(){ var cur=root.getAttribute('data-theme'); return (cur==='dark')?'☀️':(cur==='light')?'🌙':'🌓'; }
   var tbtn=el('themeBtn'); if(tbtn){ tbtn.textContent=label(); tbtn.addEventListener('click', function(){
@@ -25,7 +24,6 @@ function vals(){ var o={}; ids.forEach(function(k){ o[k]= Number(el(k).value)||0
   });}
 })();
 
-// Core model
 function riskScore(v){
   var p=v.p, cv=v.cv, cf=v.cf, q=v.q, debt=v.debt, rate=v.rate;
   var mc_u = p - cv;
@@ -93,22 +91,22 @@ function buildPlan(){
   '</ul><p class="muted">Combina le azioni con realismo (mercato, concorrenza, capacità).</p>';
 }
 
-// Events (after DOM ready)
+// Events
 document.addEventListener('DOMContentLoaded', function(){
-  var cb=el('calcBtn'); if(cb) cb.addEventListener('click', render);
-  var rb=el('resetBtn'); if(rb) rb.addEventListener('click', function(){ ids.forEach(function(id){ el(id).value=0; }); render(); });
+  // live update
   ids.forEach(function(id){ var n=el(id); if(n) n.addEventListener('input', render, {passive:true}); });
-
+  // reset
+  var rb=el('resetBtn'); if(rb) rb.addEventListener('click', function(){ ids.forEach(function(id){ el(id).value=0; }); render(); });
+  // dialogs
   var pb=el('planBtn'); if(pb) pb.addEventListener('click', function(){
     var box=el('planDialog'), tgt=el('planContent');
     if(tgt) tgt.innerHTML = buildPlan();
-    if (box && box.showModal) box.showModal(); else alert(tgt ? tgt.textContent : 'Apri dopo Calcola');
+    if (box && box.showModal) box.showModal(); else alert(tgt ? tgt.textContent : 'Inserisci dei dati prima.');
   });
   var hb=el('helpBtn'); if(hb) hb.addEventListener('click', function(){
-    var box=el('helpDialog'); if (box && box.showModal) box.showModal(); else alert('Compila i dati e premi “Calcola”. Usa “Suggerimento” per il piano d’azione.');
+    var box=el('helpDialog'); if (box && box.showModal) box.showModal(); else alert('Inserisci i dati: la PWA ricalcola in tempo reale. Usa “Suggerimento” per il piano d’azione.');
   });
-
-  // Install handling
+  // install
   var ib=el('installBtn'); var how=el('howBtn'); var deferred=null;
   window.addEventListener('beforeinstallprompt', function(e){
     e.preventDefault(); deferred=e; if(ib) ib.classList.remove('hide');
@@ -118,5 +116,6 @@ document.addEventListener('DOMContentLoaded', function(){
     alert('Installazione:\n• iPhone/iPad (Safari): Condividi → Aggiungi a Home\n• Android (Chrome): menu ⋮ → Installa app / Aggiungi a schermata Home\n• Desktop (Chrome/Edge): icona Installa nella barra URL');
   });
 
+  // first render
   render();
 });
