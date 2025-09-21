@@ -1,3 +1,6 @@
+// v3 — console tag
+console.info('RischioImpresa v3 loaded');
+
 // ===== Helpers
 const €  = n => isFinite(n) ? n.toLocaleString('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}) : '—';
 const €2 = n => isFinite(n) ? n.toLocaleString('it-IT',{style:'currency',currency:'EUR'}) : '—';
@@ -7,7 +10,7 @@ const el  = id => document.getElementById(id);
 const ids = ['p','cv','cf','q','debt','rate','equity'];
 const vals= () => Object.fromEntries(ids.map(k => [k, Number(el(k).value)||0]));
 
-// ===== Theme (light/dark/auto)
+// ===== Theme
 (function initTheme(){
   const root = document.documentElement;
   const saved = localStorage.getItem('ri.theme'); // 'light' | 'dark' | 'auto'
@@ -50,29 +53,23 @@ function riskScore({p,cv,cf,q,debt,rate,equity}){
 }
 
 function render(){
-  const v = vals();
-  const r = riskScore(v);
-
-  el('mc_u').textContent = €2(r.mc_u);
-  el('mc_pct').textContent = pct(r.mcp);
-  el('bep_u').textContent = isFinite(r.bep_u) ? num(Math.ceil(r.bep_u)) : '—';
-  el('bep_rev').textContent = isFinite(r.bep_u) ? €2(Math.ceil(r.bep_u)*v.p) : '—';
-  el('rev').textContent = €2(r.rev);
-  el('ebit').textContent = €2(r.ebit);
-  el('int').textContent = €2(r.interest);
-  el('icr').textContent = isFinite(r.icr) ? r.icr.toFixed(2) : '—';
-  el('dol').textContent = isFinite(r.dol) ? (Math.abs(r.dol)>50? '›50' : r.dol.toFixed(2)) : '—';
-
-  const badge = el('scoreBadge');
-  badge.textContent = `Score: ${r.score}/100`;
-  const bar = el('scoreBar').firstElementChild;
-  bar.style.width = `${r.score}%`;
-
-  let note = '';
-  if (r.score < 40) { badge.style.background = '#ffe3e3'; note = 'Rischio ALTO: agisci subito.'; }
-  else if (r.score < 70) { badge.style.background = '#fff3d4'; note = 'Rischio MEDIO: migliora i fondamentali.'; }
-  else { badge.style.background = '#e2ffe8'; note = 'Rischio BASSO: continua così ma monitora.'; }
-  el('scoreNote').textContent = note;
+  try{
+    const v = vals();
+    const r = riskScore(v);
+    el('mc_u').textContent = €2(r.mc_u);
+    el('mc_pct').textContent = pct(r.mcp);
+    el('bep_u').textContent = isFinite(r.bep_u) ? num(Math.ceil(r.bep_u)) : '—';
+    el('bep_rev').textContent = isFinite(r.bep_u) ? €2(Math.ceil(r.bep_u)*v.p) : '—';
+    el('rev').textContent = €2(r.rev);
+    el('ebit').textContent = €2(r.ebit);
+    el('int').textContent = €2(r.interest);
+    el('icr').textContent = isFinite(r.icr) ? r.icr.toFixed(2) : '—';
+    el('dol').textContent = isFinite(r.dol) ? (Math.abs(r.dol)>50? '›50' : r.dol.toFixed(2)) : '—';
+    const badge = el('scoreBadge');
+    badge.textContent = `Score: ${r.score}/100`;
+    el('scoreBar').firstElementChild.style.width = `${r.score}%`;
+    el('scoreNote').textContent = (r.score<40)?'Rischio ALTO: agisci subito.':(r.score<70)?'Rischio MEDIO: migliora i fondamentali.':'Rischio BASSO: continua così ma monitora.';
+  }catch(e){ console.error(e); }
 }
 
 function buildPlan(){
@@ -95,61 +92,51 @@ function buildPlan(){
   const deltaEBIT_ICR = Math.max(0, needEBITforICR - r.ebit);
   const unitsForICR = r.mc_u>0 ? Math.ceil(deltaEBIT_ICR / r.mc_u) : Infinity;
   const fmt = n => isFinite(n) ? n.toLocaleString('it-IT') : '—';
-
-  return `
-    <ul>
-      <li><strong>Aumenta volumi</strong>: +<b>${fmt(addUnits)}</b> unità/anno (safety ≥ 20%).</li>
-      <li><strong>Aggiusta prezzo</strong>: +<b>${€2(dPrice)}</b> per unità (a parità di Q).</li>
-      <li><strong>Taglia costi fissi</strong>: −<b>${€2(cutCF)}</b>.</li>
-      <li><strong>Copri oneri</strong>: +<b>${fmt(unitsForICR)}</b> unità/anno per ICR ≥ 2.</li>
-    </ul>
-    <p class="muted">Combina le azioni con realismo (mercato, concorrenza, capacità).</p>
-  `;
+  return `<ul>
+    <li><strong>Aumenta volumi</strong>: +<b>${fmt(addUnits)}</b> unità/anno (safety ≥ 20%).</li>
+    <li><strong>Aggiusta prezzo</strong>: +<b>${€2(dPrice)}</b> per unità (a parità di Q).</li>
+    <li><strong>Taglia costi fissi</strong>: −<b>${€2(cutCF)}</b>.</li>
+    <li><strong>Copri oneri</strong>: +<b>${fmt(unitsForICR)}</b> unità/anno per ICR ≥ 2.</li>
+  </ul>
+  <p class="muted">Combina le azioni con realismo (mercato, concorrenza, capacità).</p>`;
 }
 
 // ===== Events
-el('calcBtn').addEventListener('click', render);
-el('resetBtn').addEventListener('click', () => { ids.forEach(id => el(id).value = 0); render(); });
-ids.forEach(id => el(id).addEventListener('input', render, {passive:true}));
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Buttons
+  document.getElementById('calcBtn').addEventListener('click', render);
+  document.getElementById('resetBtn').addEventListener('click', () => { ids.forEach(id => el(id).value = 0); render(); });
+  ids.forEach(id => el(id).addEventListener('input', render, {passive:true}));
+  document.getElementById('planBtn').addEventListener('click', () => {
+    el('planContent').innerHTML = buildPlan();
+    const box = document.getElementById('planDialog');
+    if (box?.showModal) box.showModal(); else alert(el('planContent').textContent);
+  });
+  document.getElementById('helpBtn').addEventListener('click', () => {
+    const box = document.getElementById('helpDialog');
+    if (box?.showModal) box.showModal(); else alert('Compila i dati e premi “Calcola”. Usa “Suggerimento” per il piano d’azione.');
+  });
 
-el('planBtn').addEventListener('click', () => {
-  el('planContent').innerHTML = buildPlan();
-  const box = document.getElementById('planDialog');
-  if (box?.showModal) box.showModal(); else alert(el('planContent').textContent);
-});
-el('helpBtn').addEventListener('click', () => {
-  const box = document.getElementById('helpDialog');
-  if (box?.showModal) box.showModal(); else alert('Compila i dati e premi “Calcola”. Usa “Suggerimento” per il piano d’azione.');
-});
+  // Install handling
+  let deferredPrompt=null;
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBtn').classList.remove('hide');
+  });
+  document.getElementById('installBtn').addEventListener('click', async ()=>{
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt=null;
+  });
+  document.getElementById('howBtn').addEventListener('click', ()=>{
+    alert('Installazione:
+• iPhone/iPad (Safari): Condividi → Aggiungi a Home
+• Android (Chrome): menu ⋮ → Installa app / Aggiungi a schermata Home
+• Desktop (Chrome/Edge): icona Installa nella barra URL');
+  });
 
-// ===== Install handling (Chrome/Edge: bottone Installa; Safari: guida)
-let deferredPrompt=null, canInstall=false;
-window.addEventListener('beforeinstallprompt', (e)=>{
-  e.preventDefault();
-  deferredPrompt = e; canInstall = true;
-  el('installBtn').classList.remove('hide');
+  // First render
+  render();
 });
-el('installBtn').addEventListener('click', async ()=>{
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt=null;
-});
-el('howBtn').addEventListener('click', ()=>{
-  const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  let msg = '';
-  if (isiOS && isSafari) {
-    msg = 'iPhone/iPad: tocca • Condividi • “Aggiungi a Home”.';
-  } else if (isSafari) {
-    msg = 'Safari su macOS: menu Safari ▸ Impostazioni per questo sito ▸ “Mostra barra strumenti installa app” oppure usa Chrome per “Installa app”.';
-  } else if (!canInstall) {
-    msg = 'Su questo browser non è disponibile il prompt nativo. Usa il menu del browser (⋮ o ⋯) ▸ “Installa app” / “Aggiungi a Home”.';
-  } else {
-    msg = 'Premi il pulsante “Installa” accanto per aggiungere la PWA.';
-  }
-  alert(msg);
-});
-
-// Auto-calc on load
-window.addEventListener('DOMContentLoaded', render);

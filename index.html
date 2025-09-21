@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
   <meta name="description" content="Calcola il rischio della tua impresa: break-even, margine di sicurezza, leva operativa e copertura oneri. PWA offline-ready.">
 </head>
 <body>
@@ -130,11 +130,11 @@
   </form>
 </dialog>
 
-<script src="app.js"></script>
+<script src="app.js?v=3"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js', {scope: './'});
+    navigator.serviceWorker.register('service-worker.js?v=3', {scope: './'});
   });
 }
 </script>
