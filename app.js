@@ -24,18 +24,17 @@ function riskScore({p,cv,cf,q,debt,rate,equity}){
   const dol = (ebit!==0) ? ((rev-varCost)/Math.max(ebit, -1e6)) : 99;
 
   // Normalize components to 0..100
-  let s1 = Math.max(0, Math.min(100, (safety*100)));        // aim >=20% safety
+  let s1 = Math.max(0, Math.min(100, (safety*100)));
   s1 = s1/0.8; if(s1>100) s1=100;
 
-  let s2 = Math.max(0, Math.min(100, (mcp*100)));           // aim >=40% MC%
+  let s2 = Math.max(0, Math.min(100, (mcp*100)));
   s2 = (s2/40)*100; if(s2>100) s2=100;
 
-  let s3 = Math.max(0, Math.min(100, (icr>=0? Math.min(icr,4)/2*100 : 0))); // ICR 0..4 -> 0..200 -> cap 100
+  let s3 = Math.max(0, Math.min(100, (icr>=0? Math.min(icr,4)/2*100 : 0)));
   if (s3>100) s3=100;
 
-  let s4 = Math.max(0, Math.min(100, 100 - Math.min(Math.abs(dol),10)/10*100)); // higher DOL -> lower score
+  let s4 = Math.max(0, Math.min(100, 100 - Math.min(Math.abs(dol),10)/10*100));
 
-  // weights
   const score = Math.round(0.35*s1 + 0.25*s2 + 0.25*s3 + 0.15*s4);
   return { score, mc_u, mcp, bep_u, rev, varCost, ebit, interest, icr, dol, safety };
 }
@@ -56,7 +55,6 @@ function render(){
 
   const badge = el('scoreBadge');
   badge.textContent = `Score: ${r.score}/100`;
-  badge.classList.remove('ok','warn','bad');
   const bar = el('scoreBar').firstElementChild;
   bar.style.width = `${r.score}%`;
 
@@ -72,67 +70,73 @@ function plan(){
   const r = riskScore(v);
 
   if (!isFinite(r.bep_u) || r.mc_u<=0){
-    el('planContent').innerHTML = `<p>Il prezzo è ≤ ai costi variabili. Aumenta il <strong>prezzo</strong> o riduci i <strong>costi variabili</strong> per generare margine di contribuzione.</p>`;
-    return;
+    return `<p>Il prezzo è ≤ ai costi variabili. Aumenta il <strong>prezzo</strong> o riduci i <strong>costi variabili</strong> per creare margine di contribuzione.</p>`;
   }
 
-  // Target: score >= 70 ⇒ approssima a safety ≥ 20% e ICR ≥ 2
   const targetSafety = 0.20;
   const targetICR = 2.0;
 
-  // 1) Delta quantità per safety target
   const bep = r.bep_u;
   const qTarget = Math.max(v.q, Math.ceil(bep / (1 - targetSafety)));
   const addUnits = Math.max(0, qTarget - v.q);
 
-  // 2) Delta prezzo per safety target a Q costante
   const mc_needed = v.cf / (v.q*(1-targetSafety));
-  const pTarget = mc_needed + v.cv; // P such that MCu meets target
+  const pTarget = mc_needed + v.cv;
   const dPrice = Math.max(0, pTarget - v.p);
 
-  // 3) Cut costi fissi per safety target a Q,P costanti
   const cfTarget = (v.p - v.cv) * v.q * (1 - targetSafety);
   const cutCF = Math.max(0, v.cf - cfTarget);
 
-  // 4) ICR target: EBIT / interest >= 2
   const interest = v.debt*(v.rate/100);
-  const ebitNow = r.ebit;
   const needEBITforICR = interest*targetICR;
-  const deltaEBIT_ICR = Math.max(0, needEBITforICR - ebitNow);
-  // translate into extra units at current MCu
+  const deltaEBIT_ICR = Math.max(0, needEBITforICR - r.ebit);
   const unitsForICR = r.mc_u>0 ? Math.ceil(deltaEBIT_ICR / r.mc_u) : Infinity;
 
   const fmt = n => isFinite(n) ? n.toLocaleString('it-IT') : '—';
 
-  el('planContent').innerHTML = `
+  return `
     <ul>
-      <li><strong>Aumenta volumi</strong>: +<b>${fmt(addUnits)}</b> unità/anno per margine di sicurezza ≥ 20%.</li>
-      <li><strong>Aggiusta prezzo</strong>: +<b>${€2(dPrice)}</b> per unità (a parità di Q) per raggiungere la stessa soglia.</li>
-      <li><strong>Taglia costi fissi</strong>: −<b>${€2(cutCF)}</b> (a prezzi e volumi attuali) per safety ≥ 20%.</li>
-      <li><strong>Copri gli oneri</strong>: servono +<b>${fmt(unitsForICR)}</b> unità/anno (oppure equivalente mix di prezzo/costi) per ICR ≥ 2.</li>
+      <li><strong>Aumenta volumi</strong>: +<b>${fmt(addUnits)}</b> unità/anno (safety ≥ 20%).</li>
+      <li><strong>Aggiusta prezzo</strong>: +<b>${€2(dPrice)}</b> per unità (a parità di Q).</li>
+      <li><strong>Taglia costi fissi</strong>: −<b>${€2(cutCF)}</b> (a prezzi e volumi attuali).</li>
+      <li><strong>Copri oneri</strong>: +<b>${fmt(unitsForICR)}</b> unità/anno per ICR ≥ 2.</li>
     </ul>
-    <p class="muted">Scegli l’azione (o la combinazione) più realistica per il tuo mercato.</p>
+    <p class="muted">Combina le azioni con realismo (mercato, concorrenza, capacità produttiva).</p>
   `;
 }
 
 // Events
-el('calcBtn').addEventListener('click', render);
-el('resetBtn').addEventListener('click', () => { ids.forEach(id => el(id).value = 0); render(); });
-el('planBtn').addEventListener('click', () => { plan(); el('planDialog').showModal(); });
-el('helpBtn').addEventListener('click', () => el('helpDialog').showModal());
+document.getElementById('calcBtn').addEventListener('click', render);
+document.getElementById('resetBtn').addEventListener('click', () => { ids.forEach(id => el(id).value = 0); render(); });
+document.getElementById('planBtn').addEventListener('click', () => {
+  const html = plan();
+  const box = document.getElementById('planDialog');
+  const tgt = document.getElementById('planContent');
+  tgt.innerHTML = html;
+  if (box?.showModal) box.showModal(); else alert(tgt.textContent);
+});
+document.getElementById('helpBtn').addEventListener('click', () => {
+  const box = document.getElementById('helpDialog');
+  if (box?.showModal) box.showModal(); else alert('Compila i dati e premi “Calcola”. Usa “Suggerimento” per il piano d’azione.');
+});
+
+// Live calc
+ids.forEach(id => {
+  el(id).addEventListener('input', render, {passive:true});
+});
 
 // PWA install prompt
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e)=>{
   e.preventDefault(); deferredPrompt = e;
   const btn = document.getElementById('installBtn');
-  btn.style.display='inline-block';
+  btn.classList.remove('hide');
   btn.addEventListener('click', async ()=>{
     if(!deferredPrompt) return;
     deferredPrompt.prompt();
     await deferredPrompt.userChoice;
     deferredPrompt=null;
-  });
+  }, {once:true});
 });
 
 // Auto-calc on load with defaults

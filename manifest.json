@@ -2,6 +2,7 @@
   "name": "Rischio d’Impresa — pezzaliAPP",
   "short_name": "RischioImpresa",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0b5fff",

@@ -1,5 +1,5 @@
-// Simple cache-first SW
-const CACHE = 'rischio-impresa-v1-20250921';
+// Cache-first SW (v2)
+const CACHE = 'rischio-impresa-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,10 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    caches.match(e.request).then(r => {
+      return r || fetch(e.request).then(resp => {
+        return resp;
+      }).catch(()=> r);
+    })
   );
 });

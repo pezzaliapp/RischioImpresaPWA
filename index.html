@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1" />
   <meta name="theme-color" content="#0b5fff"/>
   <title>📈 Rischio d’Impresa — PWA</title>
   <link rel="manifest" href="manifest.json">
@@ -14,10 +14,10 @@
 <body>
 <header class="topbar">
   <div class="brand">📈 Rischio d’Impresa</div>
-  <nav>
-    <button id="helpBtn" class="ghost">Guida</button>
-    <button id="planBtn" class="primary">Suggerimento</button>
-    <button id="installBtn" class="ghost">Installa</button>
+  <nav class="top-actions">
+    <button id="helpBtn" class="ghost" aria-label="Guida">Guida</button>
+    <button id="planBtn" class="primary" aria-label="Suggerimento">Suggerimento</button>
+    <button id="installBtn" class="ghost hide" aria-label="Installa">Installa</button>
   </nav>
 </header>
 
@@ -25,7 +25,7 @@
 <section class="intro">
   <h1>Mettiti alla prova — Scopri il commerciale & l’imprenditore che c’è in te</h1>
   <p>
-    Inserisci pochi dati della tua simulazione e ottieni subito <strong>Break-even</strong>, 
+    Inserisci pochi dati e ottieni subito <strong>Break-even</strong>, 
     <strong>Margine di Sicurezza</strong>, <strong>Leva Operativa</strong>, 
     <strong>Copertura Oneri</strong> e uno <strong>Score di Rischio</strong> (0–100).
   </p>
@@ -36,29 +36,31 @@
     <h2>Input</h2>
     <div class="form">
       <label>Prezzo medio per unità (€)
-        <input id="p" type="number" min="0" step="0.01" value="100">
+        <input id="p" type="number" inputmode="decimal" min="0" step="0.01" value="100">
       </label>
       <label>Costo variabile unitario (€)
-        <input id="cv" type="number" min="0" step="0.01" value="60">
+        <input id="cv" type="number" inputmode="decimal" min="0" step="0.01" value="60">
       </label>
       <label>Costi fissi annui (€)
-        <input id="cf" type="number" min="0" step="1" value="20000">
+        <input id="cf" type="number" inputmode="numeric" min="0" step="1" value="20000">
       </label>
       <label>Quantità prevista (unità/anno)
-        <input id="q" type="number" min="0" step="1" value="800">
+        <input id="q" type="number" inputmode="numeric" min="0" step="1" value="800">
       </label>
-      <label>Debito medio (€/anno)*
-        <input id="debt" type="number" min="0" step="1" value="10000">
-      </label>
-      <label>Tasso interesse medio annuo (%)
-        <input id="rate" type="number" min="0" step="0.1" value="6">
-      </label>
+      <div class="row2">
+        <label>Debito medio (€/anno)*
+          <input id="debt" type="number" inputmode="numeric" min="0" step="1" value="10000">
+        </label>
+        <label>Tasso interesse (%) 
+          <input id="rate" type="number" inputmode="decimal" min="0" step="0.1" value="6">
+        </label>
+      </div>
       <label>Capitale proprio (€)
-        <input id="equity" type="number" min="0" step="1" value="15000">
+        <input id="equity" type="number" inputmode="numeric" min="0" step="1" value="15000">
       </label>
       <small class="muted">* Debito su cui calcoli gli interessi (semplificazione).</small>
       <div class="actions">
-        <button id="calcBtn" class="primary">Calcola</button>
+        <button id="calcBtn" class="primary large">Calcola</button>
         <button id="resetBtn" class="ghost">Reset</button>
       </div>
     </div>
@@ -79,7 +81,7 @@
       <div class="score">
         <div id="scoreBadge" class="badge">Score: —</div>
         <div id="scoreBar" class="bar"><span style="width:0%"></span></div>
-        <p id="scoreNote" class="muted">Premi “Calcola”.</p>
+        <p id="scoreNote" class="muted">Modifica un dato o premi “Calcola”.</p>
       </div>
     </div>
   </div>
@@ -104,11 +106,11 @@
 <dialog id="helpDialog">
   <h3>Come funziona</h3>
   <p>
-    Completa gli input e tocca <em>Calcola</em>. Lo <strong>Score di Rischio</strong> sintetizza più indicatori
+    Compila gli input: la PWA ricalcola in tempo reale. Lo <strong>Score di Rischio</strong> sintetizza più indicatori
     in una scala 0–100: <span class="chip red">0–39 Alto</span>, <span class="chip amber">40–69 Medio</span>, <span class="chip green">70–100 Basso</span>.
   </p>
   <p>
-    Usa <em>Suggerimento</em> per un piano d’azione su misura affinché lo score salga almeno a <strong>70</strong>.
+    Tocca <em>Suggerimento</em> per un piano d’azione che punti a uno score ≥ <strong>70</strong>.
   </p>
   <form method="dialog">
     <button class="primary">Ok</button>
@@ -130,7 +132,7 @@
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js');
+    navigator.serviceWorker.register('service-worker.js', {scope: './'});
   });
 }
 </script>
